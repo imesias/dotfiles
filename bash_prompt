@@ -1,0 +1,101 @@
+#
+#  Colors (Gruvbox Palette):
+# -------------------------------
+# Hardcoded ANSI 256-color sequences for the Gruvbox Dark theme.
+# These avoid expensive 'tput' forks during shell startup.
+#
+bold="\[\e[1m\]"; reset="\[\e[0m\]"
+white="\[\e[38;5;223m\]"  # Gruvbox light0 (fg)
+green="\[\e[38;5;142m\]"  # Gruvbox green
+orange="\[\e[38;5;208m\]" # Gruvbox orange
+red="\[\e[38;5;167m\]"    # Gruvbox red
+purple="\[\e[38;5;175m\]" # Gruvbox purple
+blue="\[\e[38;5;109m\]"   # Gruvbox blue/aqua
+yellow="\[\e[38;5;214m\]" # Gruvbox yellow
+gray="\[\e[38;5;245m\]"   # Gruvbox gray
+
+#
+#  Git Logic:
+# ------------------
+# Runs git status only when necessary and uses bash built-ins for speed.
+#
+refresh_prompt_git() {
+	local branchName=''
+	local s=''
+	local status_output=''
+
+	# Check if inside a git repo 
+	git rev-parse --is-inside-work-tree &>/dev/null || {
+		__GIT_PROMPT_CACHE=""
+		return
+	}
+
+	# Get the current branch name or short SHA
+	branchName="$(git symbolic-ref --quiet --short HEAD 2> /dev/null || \
+		git describe --all --exact-match HEAD 2> /dev/null || \
+		git rev-parse --short HEAD 2> /dev/null || \
+		echo '(unknown)')"
+
+	# Get status once (porcelain is machine-readable and fast)
+	status_output="$(git status --porcelain 2>/dev/null)"
+
+	# Use Bash regex matching instead of 'grep' to save process forks
+	[[ "${status_output}" =~ [[:space:]][MDAU] ]] && s+='!' # Unstaged
+	[[ "${status_output}" =~ ^[MDAU] ]]           && s+='+' # Staged
+	[[ "${status_output}" =~ \?\? ]]              && s+='?' # Untracked
+	
+	# Stash check
+	git rev-parse --verify refs/stash &>/dev/null && s+='$'
+
+	# Format the final string using Gruvbox colors
+	if [[ -n "${s}" ]]; then
+		__GIT_PROMPT_CACHE=" ${gray}on ${purple}${branchName}${blue} [${s}]"
+	else
+		__GIT_PROMPT_CACHE=" ${gray}on ${purple}${branchName}"
+	fi
+}
+
+
+#
+#  Prompt Construction:
+# ----------------------------
+# This function is triggered by PROMPT_COMMAND before every prompt render.
+#
+set_prompt() {
+	# Capture the exit code of the last command
+	local exit_status=$?
+
+	# Detect if the last command was a git command to force a refresh
+	# 'fc' is a shell builtin and faster than 'history'
+	local last_cmd=$(fc -ln -1 2>/dev/null)
+
+	# Only run git commands if directory changed OR git was just used
+	if [[ "${PWD}" != "${__LAST_PWD}" || "${last_cmd}" == *"git"* ]]; then
+		refresh_prompt_git
+		__LAST_PWD="${PWD}"
+	fi
+
+	# User style: Red for root, Orange for others
+	local userStyle="${orange}"
+	[[ "${USER}" == "root" ]] && userStyle="${red}"
+
+	# Host style: Bold Red for SSH, Yellow for local
+	local hostStyle="${yellow}"
+	[[ -n "${SSH_TTY}" ]] && hostStyle="${bold}${red}"
+
+	# Build PS1 using the cached git string
+	PS1="${bold}${userStyle}\u${white} at ${hostStyle}\h${white} in ${green}\w${__GIT_PROMPT_CACHE} ${white}\$ ${reset}"
+
+	# Set the terminal window title (basename of current directory)
+	printf "\033]0;%s\007" "${PWD##*/}"
+}
+
+
+#
+#  Execution:
+# -----------
+# Assign the function to PROMPT_COMMAND to initialize lazy-loading.
+#
+PROMPT_COMMAND=set_prompt
+PS2="${yellow}→ ${reset}"
+export PS2
