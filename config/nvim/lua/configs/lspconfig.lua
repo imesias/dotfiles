@@ -2,12 +2,15 @@ local on_attach = require("nvchad.configs.lspconfig").on_attach
 local on_init = require("nvchad.configs.lspconfig").on_init
 local capabilities = require("nvchad.configs.lspconfig").capabilities
 
-require("nvchad.configs.lspconfig").defaults()
+local lspconfig = require("nvchad.configs.lspconfig")
 
-local default_servers = {
+-- Not used yet
+lspconfig.servers = {
+  -- lua
   "lua_ls",
-  "html",
-  "cssls",
+
+  -- golang
+  "gopls",
 
   -- python
   "pyrefly",
@@ -16,7 +19,34 @@ local default_servers = {
   "bashls",
 
   -- javascript
-  "tsserver",
+  "eslint",
+  "jsonls",
+  "cssls",
+  "emmet_ls",
+
+  -- docker
+  "dockerls",
+
+  -- devops
+  "terraformls",
+  "ansiblels",
+}
+
+-- list of servers configured with default config.
+local default_servers = {
+  -- lua
+  "lua_ls",
+
+  -- golang
+  "gopls",
+
+  -- python
+  "pyrefly",
+
+  -- bash
+  "bashls",
+
+  -- javascript
   "eslint",
   "jsonls",
   "cssls",
@@ -39,6 +69,6 @@ for _, lsp in ipairs(default_servers) do
   })
 end
 
-vim.lsp.enable(default_servers)
+-- vim.lsp.enable(servers)
 
 -- read :h vim.lsp.config for changing options of lsp servers

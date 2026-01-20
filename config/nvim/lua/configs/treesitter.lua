@@ -1,13 +1,7 @@
 local options = {
   ensure_installed = {
     "bash",
-    "fish",
     "lua",
-    "python",
-    "css",
-    "html",
-    "javascript",
-    "json",
     "luadoc",
     "markdown",
     "printf",
@@ -15,6 +9,12 @@ local options = {
     "vim",
     "vimdoc",
     "yaml",
+    "go",
+    "gomod",
+    "gosum",
+    "gotmpl",
+    "gowork",
+    "python",
   },
 
   highlight = {
@@ -25,4 +25,4 @@ local options = {
   indent = { enable = true },
 }
 
-require("nvim-treesitter.configs").setup(options)
+return options

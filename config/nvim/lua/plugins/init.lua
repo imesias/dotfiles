@@ -1,4 +1,20 @@
 return {
+  -- conform
+  {
+    "stevearc/conform.nvim",
+    event = "BufWritePre",
+    opts = require("configs.conform"),
+  },
+
+  -- lspconfig
+  {
+    "neovim/nvim-lspconfig",
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      require("configs.lspconfig")
+    end,
+  },
+
   -- treesitter
   {
     "nvim-treesitter/nvim-treesitter",
@@ -8,21 +24,12 @@ return {
     end,
   },
 
-  -- linting/formating
+  -- linting
   {
     "mfussenegger/nvim-lint",
     event = { "BufReadPre", "BufNewFile" },
     config = function()
       require("configs.lint")
-    end,
-  },
-
-  -- lspconfig
-  {
-    "neovim/nvim-lspconfig",
-    event = { "BufReadPre", "BufNewFile" },
-    config = function()
-      require("configs.lspconfig")
     end,
   },
 
@@ -46,14 +53,14 @@ return {
     end,
   },
 
-  -- mason-nvim-lint
+  -- mason-lint
   {
-      "rshkarin/mason-nvim-lint",
-      event = "VeryLazy",
-      dependencies = { "nvim-lint" },
-      config = function()
-          require("configs.mason-lint")
-      end,
+    "rshkarin/mason-nvim-lint",
+    event = "VeryLazy",
+    dependencies = { "nvim-lint" },
+    config = function()
+      require("configs.mason-lint")
+    end,
   },
 
   -- codeium/windsurf
@@ -86,4 +93,7 @@ return {
       },
     },
   },
+
+  -- test new blink
+  -- { import = "nvchad.blink.lazyspec" },
 }

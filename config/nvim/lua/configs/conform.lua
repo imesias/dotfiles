@@ -1,9 +1,27 @@
 local options = {
   formatters_by_ft = {
     lua = { "stylua" },
-    css = { "prettier" },
-    html = { "prettier" },
-    python = { "pyrefly" },
+    go = { "gofumpt", "goimports-reviser", "golines" },
+    python = { "ruff" },
+  },
+
+  formatters = {
+    -- Python
+    ruff = {
+      prepend_args = {
+        "--fast",
+        "--line-length",
+        "80",
+      },
+    },
+
+    -- Golang
+    ["goimports-reviser"] = {
+      prepend_args = { "-rm-unused" },
+    },
+    golines = {
+      prepend_args = { "--max-len=80" },
+    },
   },
 
   format_on_save = {
